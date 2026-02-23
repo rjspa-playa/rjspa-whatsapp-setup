@@ -281,25 +281,24 @@ function launchWhatsAppSignup() {
       resultsBox.style.display = 'none';
       errorBox.style.display = 'none';
 
-      FB.logout(function() {
-        FB.login(function (response) {
-          if (response.authResponse) {
-            var code = response.authResponse.code;
-          } else {
-            errorBox.style.display = 'block';
-            document.getElementById('error-msg').textContent =
-              'No se completo la autorizacion. Intenta de nuevo.';
-          }
-        }, {
-          config_id: '1458289662674867',
-          response_type: 'code',
-          override_default_response_type: true,
-          extras: {
-            setup: {},
-            sessionInfoVersion: 3,
-            featureType: 'whatsapp_business_app_onboard'
-          }
-        });
+      FB.login(function (response) {
+        if (response.authResponse) {
+          var code = response.authResponse.code;
+        } else {
+          errorBox.style.display = 'block';
+          document.getElementById('error-msg').textContent =
+            'No se completo la autorizacion. Intenta de nuevo.';
+        }
+      }, {
+        config_id: '1458289662674867',
+        response_type: 'code',
+        override_default_response_type: true,
+        auth_type: 'reauthorize',
+        extras: {
+          setup: {},
+          sessionInfoVersion: 3,
+          featureType: 'whatsapp_business_app_onboard'
+        }
       });
     }
 

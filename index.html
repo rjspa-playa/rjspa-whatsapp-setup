@@ -275,17 +275,14 @@
       });
     };
 
-function launchWhatsAppSignup() {
-      var resultsBox = document.getElementById('results-box');
-      var errorBox = document.getElementById('error-box');
-      resultsBox.style.display = 'none';
-      errorBox.style.display = 'none';
-
+function startEmbeddedSignup() {
       FB.login(function (response) {
         if (response.authResponse) {
           var code = response.authResponse.code;
+          // Code obtained — session info (waba_id, phone_number_id)
+          // will arrive via the message event listener below.
         } else {
-          errorBox.style.display = 'block';
+          document.getElementById('error-box').style.display = 'block';
           document.getElementById('error-msg').textContent =
             'No se completo la autorizacion. Intenta de nuevo.';
         }
@@ -293,11 +290,30 @@ function launchWhatsAppSignup() {
         config_id: '1458289662674867',
         response_type: 'code',
         override_default_response_type: true,
-        auth_type: 'reauthorize',
         extras: {
           setup: {},
           sessionInfoVersion: 3,
           featureType: 'whatsapp_business_app_onboard'
+        }
+      });
+    }
+
+    function launchWhatsAppSignup() {
+      var resultsBox = document.getElementById('results-box');
+      var errorBox = document.getElementById('error-box');
+      resultsBox.style.display = 'none';
+      errorBox.style.display = 'none';
+
+      // Check for an existing Facebook session. If one exists, log out
+      // first so the Embedded Signup shows the full Coexistence flow
+      // (including the QR code step) instead of the "Reconnect" shortcut.
+      FB.getLoginStatus(function (statusResponse) {
+        if (statusResponse.status === 'connected') {
+          FB.logout(function () {
+            startEmbeddedSignup();
+          });
+        } else {
+          startEmbeddedSignup();
         }
       });
     }

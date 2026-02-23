@@ -1,0 +1,332 @@
+<!--
+  ============================================================
+  DEPLOYMENT INSTRUCTIONS
+  ============================================================
+  1. Create a new Google Apps Script project at https://script.google.com
+  2. Paste the contents of Code.gs into the default Code.gs file
+  3. Create a new HTML file named "Index" (File > New > HTML file)
+     and paste this file's contents into it
+  4. Click Deploy > New deployment
+     - Type: Web app
+     - Execute as: Me
+     - Who has access: Anyone
+  5. Copy the deployed web app URL
+  6. In Meta Developers (https://developers.facebook.com):
+     - Go to your App Settings > Basic
+     - Add the script.google.com domain to "App Domains"
+     - Go to Facebook Login for Business > Settings
+     - Add the full web app URL to "Valid OAuth Redirect URIs"
+  7. Replace YOUR_CONFIG_ID below with your actual WhatsApp
+     Embedded Signup configuration ID from Meta
+  ============================================================
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #3a3a3a;
+      background: #f9f7f5;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem 0;
+      border-bottom: 2px solid #d4c5b5;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: #6b5b4e;
+      letter-spacing: 0.1em;
+      font-weight: 300;
+    }
+
+    header p {
+      color: #9a8a7c;
+      margin-top: 0.25rem;
+      font-size: 0.95rem;
+    }
+
+    .signup-section {
+      text-align: center;
+      background: #fff;
+      border-radius: 12px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 2px 12px rgba(107, 91, 78, 0.08);
+      margin-bottom: 2.5rem;
+    }
+
+    .signup-section h2 {
+      font-size: 1.25rem;
+      color: #6b5b4e;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .signup-section p {
+      color: #7a6e63;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .btn-whatsapp {
+      display: inline-block;
+      background: #25d366;
+      color: #fff;
+      border: none;
+      padding: 0.85rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-whatsapp:hover { background: #1fb855; }
+
+    #results-box {
+      display: none;
+      margin-top: 1.5rem;
+      background: #f0faf3;
+      border: 1px solid #b8e6c8;
+      border-radius: 8px;
+      padding: 1.25rem;
+      text-align: left;
+      word-break: break-all;
+    }
+
+    #results-box h3 {
+      color: #2e7d46;
+      font-size: 0.95rem;
+      margin-bottom: 0.75rem;
+    }
+
+    #results-box p {
+      font-size: 0.85rem;
+      color: #3a3a3a;
+      margin-bottom: 0.4rem;
+    }
+
+    #results-box code {
+      background: #e6f5eb;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    #error-box {
+      display: none;
+      margin-top: 1.5rem;
+      background: #fef2f2;
+      border: 1px solid #f5c6c6;
+      border-radius: 8px;
+      padding: 1.25rem;
+      text-align: left;
+    }
+
+    #error-box h3 {
+      color: #b91c1c;
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+
+    #error-box p {
+      font-size: 0.85rem;
+      color: #7f1d1d;
+    }
+
+    .privacy-section {
+      background: #fff;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 2px 12px rgba(107, 91, 78, 0.08);
+    }
+
+    .privacy-section h2 {
+      font-size: 1.2rem;
+      color: #6b5b4e;
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
+    .privacy-section h3 {
+      font-size: 1rem;
+      color: #6b5b4e;
+      margin: 1.25rem 0 0.5rem;
+      font-weight: 500;
+    }
+
+    .privacy-section p, .privacy-section li {
+      font-size: 0.88rem;
+      color: #5a5a5a;
+    }
+
+    .privacy-section ul {
+      padding-left: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .privacy-section li { margin-bottom: 0.3rem; }
+
+    footer {
+      text-align: center;
+      padding: 2rem 0 1rem;
+      color: #b0a49a;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>RJSPA</h1>
+      <p>Aesthetic Spa &bull; Playa del Carmen</p>
+    </header>
+
+    <section class="signup-section">
+      <h2>Conectar WhatsApp Business</h2>
+      <p>Haz clic en el boton para vincular tu numero de WhatsApp Business con la Cloud API.</p>
+      <button class="btn-whatsapp" onclick="launchWhatsAppSignup()">Conectar WhatsApp Business</button>
+
+      <div id="results-box">
+        <h3>Conexion exitosa</h3>
+        <p><strong>WABA ID:</strong> <code id="waba-id"></code></p>
+        <p><strong>Phone Number ID:</strong> <code id="phone-id"></code></p>
+      </div>
+
+      <div id="error-box">
+        <h3>Error</h3>
+        <p id="error-msg"></p>
+      </div>
+    </section>
+
+    <section class="privacy-section">
+      <h2>Politica de Privacidad</h2>
+      <p><strong>Ultima actualizacion:</strong> 23 de febrero de 2026</p>
+
+      <h3>1. Responsable del Tratamiento</h3>
+      <p>RJSPA, con domicilio en Playa del Carmen, Quintana Roo, Mexico, es responsable del tratamiento de los datos personales recabados a traves de WhatsApp Business.</p>
+
+      <h3>2. Datos que Recopilamos</h3>
+      <p>Al comunicarte con nosotros por WhatsApp, podemos recopilar:</p>
+      <ul>
+        <li>Numero de telefono</li>
+        <li>Nombre de perfil de WhatsApp</li>
+        <li>Contenido de los mensajes enviados y recibidos</li>
+        <li>Fecha y hora de las conversaciones</li>
+      </ul>
+
+      <h3>3. Uso de los Datos</h3>
+      <p>Utilizamos tus datos personales para:</p>
+      <ul>
+        <li>Responder a tus consultas y solicitudes de citas</li>
+        <li>Enviar confirmaciones y recordatorios de citas</li>
+        <li>Brindarte informacion sobre nuestros servicios</li>
+        <li>Mejorar la calidad de nuestro servicio al cliente</li>
+      </ul>
+
+      <h3>4. Almacenamiento y Proteccion</h3>
+      <p>Los datos se almacenan en los servidores seguros de Meta (WhatsApp Cloud API) y se protegen mediante cifrado. Solo el personal autorizado de RJSPA tiene acceso a las conversaciones. Los datos se conservan unicamente durante el tiempo necesario para cumplir con los fines descritos.</p>
+
+      <h3>5. Comparticion de Datos</h3>
+      <p>No vendemos, alquilamos ni compartimos tus datos personales con terceros, salvo lo necesario para operar el servicio de WhatsApp Business a traves de Meta Platforms, Inc.</p>
+
+      <h3>6. Tus Derechos</h3>
+      <p>Tienes derecho a:</p>
+      <ul>
+        <li>Acceder a tus datos personales</li>
+        <li>Solicitar la rectificacion o eliminacion de tus datos</li>
+        <li>Oponerte al tratamiento de tus datos</li>
+        <li>Revocar tu consentimiento en cualquier momento</li>
+      </ul>
+      <p>Para ejercer estos derechos, contactanos por WhatsApp al +52 984 106 4748.</p>
+
+      <h3>7. Cambios a esta Politica</h3>
+      <p>Nos reservamos el derecho de actualizar esta politica. Cualquier cambio sera publicado en esta misma pagina.</p>
+    </section>
+
+    <footer>
+      &copy; 2026 RJSPA. Todos los derechos reservados.
+    </footer>
+  </div>
+
+  <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+  <script>
+    window.fbAsyncInit = function () {
+      FB.init({
+        appId: '563345656618513',
+        autoLogAppEvents: true,
+        xfbml: true,
+        version: 'v22.0'
+      });
+    };
+
+    function launchWhatsAppSignup() {
+      var resultsBox = document.getElementById('results-box');
+      var errorBox = document.getElementById('error-box');
+      resultsBox.style.display = 'none';
+      errorBox.style.display = 'none';
+
+      FB.login(function (response) {
+        if (response.authResponse) {
+          var code = response.authResponse.code;
+          // The code can be exchanged server-side for an access token.
+          // For Coexistence, the key values come from the session info callback.
+        } else {
+          errorBox.style.display = 'block';
+          document.getElementById('error-msg').textContent =
+            'No se completo la autorizacion. Intenta de nuevo.';
+        }
+      }, {
+        config_id: 'YOUR_CONFIG_ID', // Replace with your Embedded Signup config ID
+        response_type: 'code',
+        override_default_response_type: true,
+        extras: {
+          featureType: 'whatsapp_business_app_onboard',
+          sessionInfoVersion: 3,
+          setup: {}
+        }
+      });
+    }
+
+    // Listen for the session info event from the Embedded Signup popup
+    window.addEventListener('message', function (event) {
+      if (event.origin !== 'https://www.facebook.com' && event.origin !== 'https://web.facebook.com') return;
+
+      try {
+        var data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+
+        if (data.type === 'WA_EMBEDDED_SIGNUP') {
+          var info = data.data;
+          if (info.waba_id && info.phone_number_id) {
+            document.getElementById('waba-id').textContent = info.waba_id;
+            document.getElementById('phone-id').textContent = info.phone_number_id;
+            document.getElementById('results-box').style.display = 'block';
+          }
+
+          if (info.error_message) {
+            document.getElementById('error-msg').textContent = info.error_message;
+            document.getElementById('error-box').style.display = 'block';
+          }
+        }
+      } catch (e) {
+        // Ignore non-JSON messages from other sources
+      }
+    });
+  </script>
+</body>
+</html>

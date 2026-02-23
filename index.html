@@ -275,31 +275,31 @@
       });
     };
 
-    function launchWhatsAppSignup() {
+function launchWhatsAppSignup() {
       var resultsBox = document.getElementById('results-box');
       var errorBox = document.getElementById('error-box');
       resultsBox.style.display = 'none';
       errorBox.style.display = 'none';
 
-      FB.login(function (response) {
-        if (response.authResponse) {
-          var code = response.authResponse.code;
-          // The code can be exchanged server-side for an access token.
-          // For Coexistence, the key values come from the session info callback.
-        } else {
-          errorBox.style.display = 'block';
-          document.getElementById('error-msg').textContent =
-            'No se completo la autorizacion. Intenta de nuevo.';
-        }
-      }, {
-        config_id: '1458289662674867',
-        response_type: 'code',
-        override_default_response_type: true,
-        extras: {
-          setup: {},
-          sessionInfoVersion: 3,
-          featureType: 'whatsapp_business_app_onboard'
-        }
+      FB.logout(function() {
+        FB.login(function (response) {
+          if (response.authResponse) {
+            var code = response.authResponse.code;
+          } else {
+            errorBox.style.display = 'block';
+            document.getElementById('error-msg').textContent =
+              'No se completo la autorizacion. Intenta de nuevo.';
+          }
+        }, {
+          config_id: '1458289662674867',
+          response_type: 'code',
+          override_default_response_type: true,
+          extras: {
+            setup: {},
+            sessionInfoVersion: 3,
+            featureType: 'whatsapp_business_app_onboard'
+          }
+        });
       });
     }
 
